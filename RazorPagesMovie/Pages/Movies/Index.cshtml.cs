@@ -20,7 +20,7 @@ namespace RazorPagesMovie.Pages.Movies
             _context = context;
         }
 
-        public IList<Movie> Movie { get;set; } = default!;
+        public IList<Movie> Movie { get; set; } = default!;
         [BindProperty(SupportsGet = true)]
         public string? SearchString { get; set; }
 
@@ -47,7 +47,7 @@ namespace RazorPagesMovie.Pages.Movies
 
             if (!string.IsNullOrEmpty(MovieGenre))
             {
-                movies = movies.Where(x => x.Genre == MovieGenre);
+                movies = movies.Where(x => x.Genre.Contains(MovieGenre));
             }
 
             // <snippet_search_selectList>
