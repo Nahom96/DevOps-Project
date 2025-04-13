@@ -10,12 +10,14 @@
 <p>
     <a asp-page="Create">Create New</a>
 </p>
-<form>
+<form method="get">
     <p>
-        <select asp-for="MovieGenre" asp-items="Model.Genres">
+        <label for="MovieGenre">Genre:</label>
+        <select id="MovieGenre" name="MovieGenre" asp-for="MovieGenre" asp-items="Model.Genres">
             <option value="">All</option>
         </select>
-        <label>Title: <input type="text" asp-for="SearchString" /></label>
+        <label for="SearchString">Title:</label>
+        <input type="text" id="SearchString" name="SearchString" asp-for="SearchString" />
         <input type="submit" value="Filter" />
     </p>
 </form>
@@ -50,8 +52,8 @@
             <td>
                 @Html.DisplayFor(modelItem => item.Genre)
             </td>
-                @Html.DisplayFor(modelItem => item.Price)
             <td>
+                @Html.DisplayFor(modelItem => item.Price)
             </td>
             <td>
                 <a asp-page="./Edit" asp-route-id="@item.Id">Edit</a> |
