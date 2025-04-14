@@ -1,0 +1,81 @@
+# ASP.NET
+# Build and test ASP.NET projects.
+# Add steps that publish symbols, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/apps/aspnet/build-aspnet-4
+
+trigger:
+- main
+
+pool:
+  name: 'DevOps-Project'
+
+variables:
+  solution: '**/*.sln'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+
+steps:
+# Install NuGet
+- task: NuGetToolInstaller@1
+  displayName: 'Install NuGet'
+
+# Restore NuGet Packages
+- task: NuGetCommand@2
+  inputs:
+    restoreSolution: '$(solution)'
+  displayName: 'Restore NuGet Packages'
+
+# Prepare SonarQube Analysis (No branch analysis for Community Edition)
+- task: SonarQubePrepare@7
+  inputs:
+    SonarQube: 'My_DevOpsProjectSonar'
+    scannerMode: 'dotnet'
+    projectKey: 'DevOps-Project_DevOps-Project_f6f1325e-407e-46e2-8856-9b975fab45c2'
+    projectName: 'RazorPagesMovie'
+
+# Build the solution
+- task: VSBuild@1
+  inputs:
+    solution: '$(solution)'
+    msbuildArgs: >
+      /p:DeployOnBuild=true 
+      /p:WebPublishMethod=Package 
+      /p:PackageAsSingleFile=true 
+      /p:SkipInvalidConfigurations=true 
+      /p:PackageLocation="$(build.artifactStagingDirectory)"
+    platform: '$(buildPlatform)'
+    configuration: '$(buildConfiguration)'
+  displayName: 'Build Solution'
+
+# Run Unit Tests
+- task: VSTest@2
+  inputs:
+    platform: '$(buildPlatform)'
+    configuration: '$(buildConfiguration)'
+  displayName: 'Run Tests'
+
+# Run SonarQube Analysis
+- task: SonarQubeAnalyze@7
+  displayName: 'Run SonarQube Analysis'
+
+# Publish SonarQube Results
+- task: SonarQubePublish@7
+  inputs:
+    pollingTimeoutSec: '300'
+  displayName: 'Publish SonarQube Results'
+
+# Publish the Application
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'publish'
+    publishWebProjects: true
+    arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+  displayName: 'Publish Application'
+
+# Publish Build Artifacts
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
+  displayName: 'Publish Artifact'
